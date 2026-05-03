@@ -9,9 +9,7 @@ export async function GET(
     const { id } = await params
 
     // Verify kos exists
-    const kos = await db.kos.findUnique({
-      where: { id },
-    })
+    const kos = db.findKosById(id)
 
     if (!kos) {
       return NextResponse.json(
@@ -20,19 +18,7 @@ export async function GET(
       )
     }
 
-    const reviews = await db.review.findMany({
-      where: { kosId: id },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+    const reviews = db.findReviewsByKosId(id)
 
     return NextResponse.json({ data: reviews })
   } catch (error) {
@@ -68,9 +54,7 @@ export async function POST(
     }
 
     // Verify kos exists
-    const kos = await db.kos.findUnique({
-      where: { id },
-    })
+    const kos = db.findKosById(id)
 
     if (!kos) {
       return NextResponse.json(
@@ -80,9 +64,7 @@ export async function POST(
     }
 
     // Check if user already reviewed this kos
-    const existingReview = await db.review.findFirst({
-      where: { userId, kosId: id },
-    })
+    const existingReview = db.findReviewByUserAndKos(userId, id)
 
     if (existingReview) {
       return NextResponse.json(
@@ -91,22 +73,11 @@ export async function POST(
       )
     }
 
-    const review = await db.review.create({
-      data: {
-        userId,
-        kosId: id,
-        rating,
-        comment: comment || null,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-          },
-        },
-      },
+    const review = db.createReview({
+      userId,
+      kosId: id,
+      rating,
+      comment: comment || undefined,
     })
 
     return NextResponse.json({ data: review }, { status: 201 })

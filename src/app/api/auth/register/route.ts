@@ -15,9 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = await db.user.findUnique({
-      where: { email },
-    })
+    const existingUser = db.findUserByEmail(email)
 
     if (existingUser) {
       return NextResponse.json(
@@ -28,14 +26,12 @@ export async function POST(request: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    const user = await db.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name,
-        phone: phone || null,
-        role: role || 'user',
-      },
+    const user = db.createUser({
+      email,
+      password: hashedPassword,
+      name,
+      phone: phone || null,
+      role: role || 'user',
     })
 
     const { password: _, ...userWithoutPassword } = user

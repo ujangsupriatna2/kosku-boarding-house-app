@@ -13,35 +13,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const bookings = await db.booking.findMany({
-      where: { userId },
-      include: {
-        kos: {
-          select: {
-            id: true,
-            name: true,
-            imageUrl: true,
-            city: true,
-            district: true,
-          },
-        },
-        room: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
-          },
-        },
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+    const bookings = db.findBookingsByUserId(userId)
 
     return NextResponse.json({ data: bookings })
   } catch (error) {

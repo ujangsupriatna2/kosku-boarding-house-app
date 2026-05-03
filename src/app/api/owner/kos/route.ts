@@ -13,10 +13,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Verify user is an owner
-    const user = await db.user.findUnique({
-      where: { id: ownerId },
-    })
+    // Verify user exists and is an owner
+    const user = db.findUserById(ownerId)
 
     if (!user || user.role !== 'owner') {
       return NextResponse.json(
@@ -25,19 +23,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const kosList = await db.kos.findMany({
-      where: { ownerId },
-      include: {
-        _count: {
-          select: {
-            rooms: true,
-            bookings: true,
-            reviews: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+    const kosList = db.findKosByOwnerId(ownerId)
 
     return NextResponse.json({ data: kosList })
   } catch (error) {
@@ -79,36 +65,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verify user is an owner
-    const user = await db.user.findUnique({
-      where: { id: ownerId },
-    })
-
-    if (!user || user.role !== 'owner') {
-      return NextResponse.json(
-        { error: 'User not found or not an owner' },
-        { status: 403 }
-      )
-    }
-
-    const kos = await db.kos.create({
-      data: {
-        ownerId,
-        name,
-        description,
-        address,
-        city,
-        district,
-        latitude: latitude || null,
-        longitude: longitude || null,
-        imageUrl: imageUrl || null,
-        priceFrom: priceFrom || 0,
-        priceTo: priceTo || 0,
-        totalRooms: totalRooms || 0,
-        availableRooms: totalRooms || 0,
-        rules: rules || null,
-        roomTypes: roomTypes || null,
-      },
+    const kos = db.createKos({
+      ownerId,
+      name,
+      description,
+      address,
+      city,
+      district,
+      latitude,
+      longitude,
+      imageUrl,
+      priceFrom,
+      priceTo,
+      totalRooms,
+      rules,
+      roomTypes,
     })
 
     return NextResponse.json(

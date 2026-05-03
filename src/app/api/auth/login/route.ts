@@ -14,9 +14,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const user = await db.user.findUnique({
-      where: { email },
-    })
+    const user = db.findUserByEmail(email)
 
     if (!user) {
       return NextResponse.json(

@@ -33,9 +33,7 @@ export async function PUT(
     }
 
     // Check if booking exists
-    const existingBooking = await db.booking.findUnique({
-      where: { id },
-    })
+    const existingBooking = db.findBookingById(id)
 
     if (!existingBooking) {
       return NextResponse.json(
@@ -44,46 +42,8 @@ export async function PUT(
       )
     }
 
-    // Update booking and potentially restore room availability
-    const updatedBooking = await db.$transaction(async (tx) => {
-      const booking = await tx.booking.update({
-        where: { id },
-        data: { status },
-        include: {
-          kos: {
-            select: {
-              id: true,
-              name: true,
-              imageUrl: true,
-            },
-          },
-          room: {
-            select: {
-              id: true,
-              name: true,
-              type: true,
-            },
-          },
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
-      })
-
-      // If booking is cancelled, set room back to available
-      if (status === 'cancelled') {
-        await tx.room.update({
-          where: { id: existingBooking.roomId },
-          data: { isAvailable: true },
-        })
-      }
-
-      return booking
-    })
+    // Update booking status
+    const updatedBooking = db.updateBookingStatus(id, status)
 
     return NextResponse.json({
       message: 'Booking updated successfully',

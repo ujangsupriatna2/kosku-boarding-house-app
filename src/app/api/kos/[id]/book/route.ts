@@ -25,9 +25,7 @@ export async function POST(
     }
 
     // Verify kos exists
-    const kos = await db.kos.findUnique({
-      where: { id },
-    })
+    const kos = db.findKosById(id)
 
     if (!kos) {
       return NextResponse.json(
@@ -37,9 +35,7 @@ export async function POST(
     }
 
     // Verify room exists and belongs to this kos
-    const room = await db.room.findFirst({
-      where: { id: roomId, kosId: id },
-    })
+    const room = db.findRoom({ id: roomId, kosId: id })
 
     if (!room) {
       return NextResponse.json(
@@ -55,48 +51,22 @@ export async function POST(
       )
     }
 
-    // Calculate total price
-    const totalPrice = room.price * duration
-
-    // Create booking and update room availability in a transaction
-    const booking = await db.$transaction(async (tx) => {
-      const newBooking = await tx.booking.create({
-        data: {
-          userId,
-          kosId: id,
-          roomId,
-          checkInDate,
-          duration,
-          totalPrice,
-          status: 'pending',
-          paymentMethod: paymentMethod || null,
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-          kos: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          room: true,
-        },
-      })
-
-      // Set room to unavailable
-      await tx.room.update({
-        where: { id: roomId },
-        data: { isAvailable: false },
-      })
-
-      return newBooking
+    // Create booking
+    const booking = db.createBooking({
+      userId,
+      kosId: id,
+      roomId,
+      checkInDate,
+      duration,
+      paymentMethod: paymentMethod || undefined,
     })
+
+    if (!booking) {
+      return NextResponse.json(
+        { error: 'Failed to create booking' },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json(
       { message: 'Booking created successfully', data: booking },

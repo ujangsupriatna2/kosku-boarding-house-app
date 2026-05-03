@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { Prisma } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,61 +15,11 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Build where clause for conversation between two users
-    const where: Prisma.ChatMessageWhereInput = {
-      OR: [
-        {
-          AND: [
-            { senderId: userId },
-            { receiverId: otherUserId },
-          ],
-        },
-        {
-          AND: [
-            { senderId: otherUserId },
-            { receiverId: userId },
-          ],
-        },
-      ],
-    }
-
-    // If kosId is provided, filter by it
-    if (kosId) {
-      where.AND = [{ kosId }]
-    }
-
-    const messages = await db.chatMessage.findMany({
-      where,
-      include: {
-        sender: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-          },
-        },
-        receiver: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'asc' },
-    })
-
-    // Mark messages sent to current user as read
-    if (messages.length > 0) {
-      await db.chatMessage.updateMany({
-        where: {
-          senderId: otherUserId,
-          receiverId: userId,
-          isRead: false,
-        },
-        data: { isRead: true },
-      })
-    }
+    const messages = db.findChatMessages(
+      userId,
+      otherUserId,
+      kosId || undefined
+    )
 
     return NextResponse.json({ data: messages })
   } catch (error) {
@@ -94,30 +43,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const chatMessage = await db.chatMessage.create({
-      data: {
-        senderId,
-        receiverId,
-        kosId: kosId || null,
-        message,
-        isRead: false,
-      },
-      include: {
-        sender: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-          },
-        },
-        receiver: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-          },
-        },
-      },
+    const chatMessage = db.createChatMessage({
+      senderId,
+      receiverId,
+      kosId: kosId || undefined,
+      message,
     })
 
     return NextResponse.json(

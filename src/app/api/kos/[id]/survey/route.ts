@@ -18,9 +18,7 @@ export async function POST(
     }
 
     // Verify kos exists
-    const kos = await db.kos.findUnique({
-      where: { id },
-    })
+    const kos = db.findKosById(id)
 
     if (!kos) {
       return NextResponse.json(
@@ -29,32 +27,12 @@ export async function POST(
       )
     }
 
-    const survey = await db.survey.create({
-      data: {
-        userId,
-        kosId: id,
-        scheduledDate,
-        scheduledTime,
-        notes: notes || null,
-        status: 'pending',
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-          },
-        },
-        kos: {
-          select: {
-            id: true,
-            name: true,
-            address: true,
-          },
-        },
-      },
+    const survey = db.createSurvey({
+      userId,
+      kosId: id,
+      scheduledDate,
+      scheduledTime,
+      notes: notes || undefined,
     })
 
     return NextResponse.json(
