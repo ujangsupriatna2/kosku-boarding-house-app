@@ -77,7 +77,7 @@ export default function ProfileView() {
         <CardContent className="p-6">
           <div className="flex items-center gap-4 mb-6">
             <Avatar className="h-16 w-16">
-              <AvatarFallback className="bg-emerald-100 text-emerald-700 text-2xl">
+              <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-2xl">
                 {user.name?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
@@ -210,7 +210,7 @@ export default function ProfileView() {
           )}
           <Button
             variant="outline"
-            className="w-full justify-start gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="w-full justify-start gap-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950"
             onClick={handleLogout}
           >
             <LogOut className="h-4 w-4" />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
 import { useTheme } from 'next-themes';
 import { useAppStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -40,17 +40,51 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const WA_LINK = 'https://wa.me/6282240066466';
 
+// Hydration-safe mounted check using useSyncExternalStore
+const emptySubscribe = () => () => {};
+function useIsMounted() {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
+}
+
+function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme();
+  const mounted = useIsMounted();
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  };
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleTheme}
+      className="rounded-full h-9 w-9"
+      aria-label="Toggle theme"
+    >
+      {mounted ? (
+        resolvedTheme === 'dark' ? (
+          <Sun className="h-4 w-4 text-foreground" />
+        ) : (
+          <Moon className="h-4 w-4 text-foreground" />
+        )
+      ) : (
+        <Moon className="h-4 w-4 text-foreground" />
+      )}
+    </Button>
+  );
+}
+
 export default function Navbar() {
   const { user, currentView, setView, setUser } = useAppStore();
   const { resolvedTheme, setTheme } = useTheme();
+  const mounted = useIsMounted();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  // Avoid hydration mismatch for theme toggle
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -101,26 +135,6 @@ export default function Navbar() {
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
   };
-
-  const ThemeToggle = ({ size = 'default' }: { size?: 'default' | 'sm' }) => (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={toggleTheme}
-      className={`rounded-full ${size === 'sm' ? 'h-9 w-9' : 'h-9 w-9'}`}
-      aria-label="Toggle theme"
-    >
-      {mounted ? (
-        resolvedTheme === 'dark' ? (
-          <Sun className="h-4 w-4 text-foreground" />
-        ) : (
-          <Moon className="h-4 w-4 text-foreground" />
-        )
-      ) : (
-        <Moon className="h-4 w-4 text-foreground" />
-      )}
-    </Button>
-  );
 
   return (
     <header

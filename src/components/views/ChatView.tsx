@@ -121,7 +121,7 @@ export default function ChatView() {
         </Button>
         <div className="flex items-center gap-3 flex-1">
           <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-emerald-100 text-emerald-700">
+            <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300">
               {chatTargetUserName?.charAt(0).toUpperCase() || '?'}
             </AvatarFallback>
           </Avatar>

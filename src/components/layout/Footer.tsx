@@ -1,7 +1,10 @@
-import { Home, Mail, Phone, MapPin, Instagram, Twitter, Facebook, Send } from 'lucide-react';
+import { Home, Mail, Phone, MapPin, Instagram, Twitter, Facebook, Send, MessageCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+
+const WA_LINK = 'https://wa.me/6282240066466';
+const PHONE_LINK = 'tel:+6282240066466';
 
 export default function Footer() {
   return (
@@ -106,13 +109,29 @@ export default function Footer() {
             <div>
               <h3 className="font-semibold text-lg mb-5">Hubungi Kami</h3>
               <ul className="space-y-3 mb-6">
+                <li>
+                  <a
+                    href={WA_LINK}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2.5 text-neutral-400 hover:text-green-400 transition-colors duration-200 text-sm"
+                  >
+                    <MessageCircle className="h-4 w-4 text-green-500 shrink-0" />
+                    <span>WhatsApp: +62 822-4006-6466</span>
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={PHONE_LINK}
+                    className="flex items-center gap-2.5 text-neutral-400 hover:text-emerald-400 transition-colors duration-200 text-sm"
+                  >
+                    <Phone className="h-4 w-4 text-emerald-500 shrink-0" />
+                    <span>+62 822-4006-6466</span>
+                  </a>
+                </li>
                 <li className="flex items-center gap-2.5 text-neutral-400 text-sm">
                   <Mail className="h-4 w-4 text-emerald-500 shrink-0" />
                   <span>support@kosku.id</span>
-                </li>
-                <li className="flex items-center gap-2.5 text-neutral-400 text-sm">
-                  <Phone className="h-4 w-4 text-emerald-500 shrink-0" />
-                  <span>+62 822-4006-6466</span>
                 </li>
                 <li className="flex items-start gap-2.5 text-neutral-400 text-sm">
                   <MapPin className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />

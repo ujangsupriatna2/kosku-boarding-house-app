@@ -169,7 +169,7 @@ export default function MyBookingsView() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-red-600 border-red-200 hover:bg-red-50 gap-1"
+                          className="text-red-600 dark:text-red-400 border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-950 gap-1"
                           onClick={() => handleCancel(booking.id)}
                           disabled={cancelling === booking.id}
                         >
