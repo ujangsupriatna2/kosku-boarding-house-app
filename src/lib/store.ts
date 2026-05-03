@@ -24,6 +24,9 @@ interface AppState {
   // Promo popup
   promoPopupDismissed: boolean;
   
+  // Scroll to section
+  pendingScrollSection: string | null;
+  
   // Actions
   setUser: (user: User | null) => void;
   setView: (view: ViewType) => void;
@@ -31,6 +34,7 @@ interface AppState {
   selectKos: (id: string, name: string, image: string | null, ownerId: string, ownerName: string) => void;
   openChat: (targetUserId: string, targetUserName: string, kosId: string) => void;
   dismissPromoPopup: () => void;
+  scrollToSection: (section: string | null) => void;
   reset: () => void;
 }
 
@@ -47,12 +51,13 @@ export const useAppStore = create<AppState>((set, get) => ({
   chatTargetUserName: null,
   chatKosId: null,
   promoPopupDismissed: false,
+  pendingScrollSection: null,
 
   setUser: (user) => set({ user }),
   
   setView: (view) => {
     const current = get().currentView;
-    set({ currentView: view, previousView: current });
+    set({ currentView: view, previousView: current, pendingScrollSection: null });
   },
 
   goBack: () => {
@@ -84,6 +89,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   dismissPromoPopup: () => set({ promoPopupDismissed: true }),
+
+  scrollToSection: (section) => set({ pendingScrollSection: section }),
 
   reset: () => set({
     user: null,

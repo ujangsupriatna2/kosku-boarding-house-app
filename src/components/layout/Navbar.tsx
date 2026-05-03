@@ -80,7 +80,7 @@ function ThemeToggle() {
 }
 
 export default function Navbar() {
-  const { user, currentView, setView, setUser } = useAppStore();
+  const { user, currentView, setView, setUser, scrollToSection } = useAppStore();
   const { resolvedTheme, setTheme } = useTheme();
   const mounted = useIsMounted();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -105,7 +105,38 @@ export default function Navbar() {
     setMobileOpen(false);
   };
 
+  const scrollTo = (sectionId: string) => {
+    // If already on home view, scroll directly
+    if (currentView === 'home') {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        const navHeight = 64;
+        const top = el.getBoundingClientRect().top + window.scrollY - navHeight;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    } else {
+      // Navigate to home first, then scroll
+      setView('home');
+      // Use requestAnimationFrame to wait for view render
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const el = document.getElementById(sectionId);
+          if (el) {
+            const navHeight = 64;
+            const top = el.getBoundingClientRect().top + window.scrollY - navHeight;
+            window.scrollTo({ top, behavior: 'smooth' });
+          }
+        });
+      });
+    }
+    setMobileOpen(false);
+  };
+
   const handleNavClick = (link: (typeof navLinks)[number]) => {
+    if (link.section) {
+      scrollTo(link.section);
+      return;
+    }
     if (link.href) {
       window.open(link.href, '_blank');
       setMobileOpen(false);
@@ -116,9 +147,9 @@ export default function Navbar() {
 
   const navLinks = [
     { label: 'Home', icon: Home, view: 'home' },
-    { label: 'Kota Populer', icon: Compass, view: 'home' },
-    { label: 'Cara Kerja', icon: Clock, view: 'home' },
-    { label: 'Kontak', icon: Phone, href: WA_LINK },
+    { label: 'Kota Populer', icon: Compass, section: 'section-kota' },
+    { label: 'Cara Kerja', icon: Clock, section: 'section-cara-kerja' },
+    { label: 'Kontak', icon: Phone, section: 'section-kontak' },
     ...(user
       ? [
           { label: 'Booking Saya', icon: CalendarCheck, view: 'my-bookings' },

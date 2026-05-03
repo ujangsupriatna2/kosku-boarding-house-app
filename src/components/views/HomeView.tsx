@@ -35,8 +35,17 @@ import {
   Quote,
   Home,
   Percent,
+  MessageCircle,
+  Phone,
+  Mail,
+  Send,
+  User,
+  MapPinned,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+
+const WA_NUMBER = '6282240066466';
+const WA_LINK = `https://wa.me/${WA_NUMBER}`;
 
 const cities = [
   { name: 'Bandung', icon: '🏔️', count: '120+' },
@@ -100,6 +109,8 @@ const quickTags = ['Putri', 'Campuran', 'AC', 'WiFi', 'Dekat Kampus', 'Parkir'];
 
 export default function HomeView() {
   const setView = useAppStore((s) => s.setView);
+  const pendingScrollSection = useAppStore((s) => s.pendingScrollSection);
+  const clearScrollSection = useAppStore((s) => s.scrollToSection);
 
   const [kosList, setKosList] = useState<KosListItem[]>([]);
   const [kosLoading, setKosLoading] = useState(true);
@@ -108,6 +119,26 @@ export default function HomeView() {
 
   const [searchCity, setSearchCity] = useState('');
   const [searchPrice, setSearchPrice] = useState('');
+
+  // Contact form
+  const [contactName, setContactName] = useState('');
+  const [contactMessage, setContactMessage] = useState('');
+  const [contactSubject, setContactSubject] = useState('info');
+
+  // Scroll to section when requested
+  useEffect(() => {
+    if (!pendingScrollSection) return;
+    const timer = setTimeout(() => {
+      const el = document.getElementById(pendingScrollSection);
+      if (el) {
+        const navHeight = 64;
+        const top = el.getBoundingClientRect().top + window.scrollY - navHeight;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+      clearScrollSection(null);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [pendingScrollSection, clearScrollSection]);
 
   useEffect(() => {
     fetchKos();
@@ -158,10 +189,27 @@ export default function HomeView() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleSendWhatsApp = () => {
+    if (!contactMessage.trim()) return;
+    const subjectMap: Record<string, string> = {
+      info: 'Informasi Umum',
+      booking: 'Pertanyaan Booking',
+      complaint: 'Keluhan',
+      partnership: 'Kerjasama',
+    };
+    const subjectLabel = subjectMap[contactSubject] || 'Informasi Umum';
+    const namePart = contactName.trim() ? `Halo, saya ${contactName.trim()}.` : 'Halo,';
+    const text = `${namePart}%0A%0ASubjek: ${subjectLabel}%0A%0A${contactMessage.trim()}`;
+    window.open(`${WA_LINK}?text=${text}`, '_blank');
+    setContactName('');
+    setContactMessage('');
+    setContactSubject('info');
+  };
+
   return (
     <div>
       {/* ===== a) HERO SECTION ===== */}
-      <section className="relative min-h-[90vh] flex items-center overflow-hidden animated-gradient">
+      <section id="section-hero" className="relative min-h-[90vh] flex items-center overflow-hidden animated-gradient">
         {/* Decorative blurred circles */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute top-20 left-10 w-72 h-72 bg-white/10 rounded-full blur-3xl animate-float" />
@@ -313,7 +361,7 @@ export default function HomeView() {
       </section>
 
       {/* ===== b) FEATURED KOS SECTION ===== */}
-      <section className="container mx-auto px-4 lg:px-8 py-20 md:py-24">
+      <section id="section-kos" className="container mx-auto px-4 lg:px-8 py-20 md:py-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -384,7 +432,7 @@ export default function HomeView() {
       </section>
 
       {/* ===== c) KOTA POPULER SECTION ===== */}
-      <section className="bg-muted/40 py-20 md:py-24">
+      <section id="section-kota" className="bg-muted/40 py-20 md:py-24">
         <div className="container mx-auto px-4 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -424,7 +472,7 @@ export default function HomeView() {
       </section>
 
       {/* ===== d) CARA KERJA SECTION ===== */}
-      <section className="container mx-auto px-4 lg:px-8 py-20 md:py-24">
+      <section id="section-cara-kerja" className="container mx-auto px-4 lg:px-8 py-20 md:py-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -525,7 +573,7 @@ export default function HomeView() {
       )}
 
       {/* ===== f) TESTIMONIAL/REVIEW SECTION ===== */}
-      <section className="container mx-auto px-4 lg:px-8 py-20 md:py-24">
+      <section id="section-testimoni" className="container mx-auto px-4 lg:px-8 py-20 md:py-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -580,7 +628,123 @@ export default function HomeView() {
         </div>
       </section>
 
-      {/* ===== g) CTA SECTION ===== */}
+      {/* ===== g) KONTAK SECTION ===== */}
+      <section id="section-kontak" className="bg-muted/40 py-20 md:py-24">
+        <div className="container mx-auto px-4 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-14"
+          >
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <div className="h-1 w-12 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500" />
+              <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Hubungi Kami</span>
+              <div className="h-1 w-12 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500" />
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Ada Pertanyaan?</h2>
+            <p className="text-muted-foreground mt-2 text-lg">Kami siap membantu! Kirim pesan langsung via WhatsApp</p>
+          </motion.div>
+
+          <div className="max-w-2xl mx-auto">
+            <Card className="rounded-2xl border-border/60 shadow-sm overflow-hidden">
+              {/* WA header */}
+              <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 text-white">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+                    <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold">Chat via WhatsApp</h3>
+                    <p className="text-green-100 text-sm">Balasan cepat, langsung ke tim kami</p>
+                  </div>
+                </div>
+              </div>
+
+              <CardContent className="p-6 md:p-8 space-y-5">
+                {/* Subject */}
+                <div>
+                  <label className="text-sm font-medium mb-2 block text-foreground">Subjek</label>
+                  <Select value={contactSubject} onValueChange={setContactSubject}>
+                    <SelectTrigger className="h-11 rounded-xl">
+                      <SelectValue placeholder="Pilih subjek" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="info">Informasi Umum</SelectItem>
+                      <SelectItem value="booking">Pertanyaan Booking</SelectItem>
+                      <SelectItem value="complaint">Keluhan</SelectItem>
+                      <SelectItem value="partnership">Kerjasama</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Name */}
+                <div>
+                  <label htmlFor="contactName" className="text-sm font-medium mb-2 block text-foreground">Nama</label>
+                  <div className="relative">
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                      id="contactName"
+                      type="text"
+                      value={contactName}
+                      onChange={(e) => setContactName(e.target.value)}
+                      placeholder="Nama kamu (opsional)"
+                      className="w-full pl-10 h-11 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-colors"
+                    />
+                  </div>
+                </div>
+
+                {/* Message */}
+                <div>
+                  <label htmlFor="contactMessage" className="text-sm font-medium mb-2 block text-foreground">Pesan <span className="text-red-500">*</span></label>
+                  <textarea
+                    id="contactMessage"
+                    value={contactMessage}
+                    onChange={(e) => setContactMessage(e.target.value)}
+                    placeholder="Tulis pesan kamu di sini..."
+                    rows={4}
+                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-colors resize-none"
+                  />
+                </div>
+
+                {/* Send WA Button */}
+                <Button
+                  onClick={handleSendWhatsApp}
+                  disabled={!contactMessage.trim()}
+                  className="w-full h-12 rounded-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold shadow-lg shadow-green-500/25 hover:shadow-green-500/40 transition-all duration-300 gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                  </svg>
+                  Kirim via WhatsApp
+                </Button>
+
+                {/* Direct contact info */}
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+                  <a
+                    href={`tel:+${WA_NUMBER}`}
+                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                  >
+                    <Phone className="h-4 w-4" />
+                    <span>+62 822-4006-6466</span>
+                  </a>
+                  <a
+                    href={`mailto:support@kosku.id`}
+                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                  >
+                    <Mail className="h-4 w-4" />
+                    <span>support@kosku.id</span>
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== h) CTA SECTION ===== */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 animated-gradient" />
         <div className="absolute inset-0 pointer-events-none">
@@ -613,7 +777,10 @@ export default function HomeView() {
               <Button
                 size="lg"
                 className="rounded-full px-8 bg-white text-emerald-700 hover:bg-emerald-50 font-semibold h-12 shadow-xl shadow-black/10 transition-all duration-300"
-                onClick={() => setView('home')}
+                onClick={() => {
+                  setView('home');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
               >
                 <Search className="h-4 w-4 mr-2" />
                 Mulai Cari Kos
