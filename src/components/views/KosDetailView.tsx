@@ -469,7 +469,7 @@ export default function KosDetailView() {
                 <TabsTrigger
                   key={tab}
                   value={tab}
-                  className="flex-1 rounded-lg text-sm font-medium capitalize data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 transition-all"
+                  className="flex-1 rounded-lg text-sm font-medium capitalize data-[state=active]:bg-card data-[state=active]:shadow-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 transition-all"
                 >
                   {tab}
                 </TabsTrigger>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { useAppStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,13 +30,27 @@ import {
   ChevronDown,
   Search,
   X,
+  Sun,
+  Moon,
+  Compass,
+  Clock,
+  Phone,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const WA_LINK = 'https://wa.me/6282240066466';
+
 export default function Navbar() {
   const { user, currentView, setView, setUser } = useAppStore();
+  const { resolvedTheme, setTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Avoid hydration mismatch for theme toggle
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -56,8 +71,20 @@ export default function Navbar() {
     setMobileOpen(false);
   };
 
+  const handleNavClick = (link: (typeof navLinks)[number]) => {
+    if (link.href) {
+      window.open(link.href, '_blank');
+      setMobileOpen(false);
+      return;
+    }
+    navigate(link.view!);
+  };
+
   const navLinks = [
     { label: 'Home', icon: Home, view: 'home' },
+    { label: 'Kota Populer', icon: Compass, view: 'home' },
+    { label: 'Cara Kerja', icon: Clock, view: 'home' },
+    { label: 'Kontak', icon: Phone, href: WA_LINK },
     ...(user
       ? [
           { label: 'Booking Saya', icon: CalendarCheck, view: 'my-bookings' },
@@ -70,6 +97,30 @@ export default function Navbar() {
   ];
 
   const isActive = (view: string) => currentView === view;
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  };
+
+  const ThemeToggle = ({ size = 'default' }: { size?: 'default' | 'sm' }) => (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleTheme}
+      className={`rounded-full ${size === 'sm' ? 'h-9 w-9' : 'h-9 w-9'}`}
+      aria-label="Toggle theme"
+    >
+      {mounted ? (
+        resolvedTheme === 'dark' ? (
+          <Sun className="h-4 w-4 text-foreground" />
+        ) : (
+          <Moon className="h-4 w-4 text-foreground" />
+        )
+      ) : (
+        <Moon className="h-4 w-4 text-foreground" />
+      )}
+    </Button>
+  );
 
   return (
     <header
@@ -98,20 +149,20 @@ export default function Navbar() {
         <nav className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => (
             <button
-              key={link.view}
-              onClick={() => navigate(link.view)}
+              key={link.label}
+              onClick={() => handleNavClick(link)}
               className="relative px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200"
             >
               <span
                 className={
-                  isActive(link.view)
+                  link.view && isActive(link.view)
                     ? 'text-emerald-600 dark:text-emerald-400'
                     : 'text-muted-foreground hover:text-foreground'
                 }
               >
                 {link.label}
               </span>
-              {isActive(link.view) && (
+              {link.view && isActive(link.view) && (
                 <motion.div
                   layoutId="nav-active"
                   className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-500"
@@ -122,8 +173,9 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* Desktop Auth */}
+        {/* Desktop Auth + Theme Toggle */}
         <div className="hidden md:flex items-center gap-2">
+          <ThemeToggle />
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -133,11 +185,11 @@ export default function Navbar() {
                       {user.name?.charAt(0).toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-medium max-w-[100px] truncate">{user.name}</span>
+                  <span className="text-sm font-medium max-w-[100px] truncate text-foreground">{user.name}</span>
                   <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52 rounded-xl p-2">
+              <DropdownMenuContent align="end" className="w-52 rounded-xl p-2 bg-card text-foreground border-border">
                 <DropdownMenuItem onClick={() => navigate('profile')} className="rounded-lg px-3 py-2.5 cursor-pointer">
                   <User className="h-4 w-4 mr-2.5 text-muted-foreground" />
                   <div className="flex flex-col">
@@ -178,7 +230,7 @@ export default function Navbar() {
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-80 p-0">
+          <SheetContent side="right" className="w-80 p-0 bg-card text-foreground">
             {/* Header */}
             <div className="px-6 pt-8 pb-4">
               <SheetTitle className="flex items-center gap-2.5">
@@ -186,22 +238,22 @@ export default function Navbar() {
                   <Home className="h-5 w-5 text-white" strokeWidth={2.5} />
                 </div>
                 <span className="text-xl font-bold tracking-tight">
-                  <span className="text-emerald-600">Kos</span>
-                  <span>Ku</span>
+                  <span className="text-emerald-600 dark:text-emerald-400">Kos</span>
+                  <span className="text-foreground">Ku</span>
                 </span>
               </SheetTitle>
             </div>
 
-            <Separator className="mx-6" />
+            <Separator className="mx-6 bg-border" />
 
             {/* Nav Links */}
             <nav className="px-4 py-4 space-y-1">
               {navLinks.map((link) => (
                 <button
-                  key={link.view}
-                  onClick={() => navigate(link.view)}
+                  key={link.label}
+                  onClick={() => handleNavClick(link)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-200 ${
-                    isActive(link.view)
+                    link.view && isActive(link.view)
                       ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400'
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   }`}
@@ -212,7 +264,7 @@ export default function Navbar() {
               ))}
             </nav>
 
-            <Separator className="mx-6" />
+            <Separator className="mx-6 bg-border" />
 
             {/* Auth Section */}
             <div className="px-4 py-4">
@@ -225,13 +277,13 @@ export default function Navbar() {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold truncate">{user.name}</p>
+                      <p className="text-sm font-semibold truncate text-foreground">{user.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                     </div>
                   </div>
                   <button
                     onClick={() => navigate('profile')}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-muted-foreground hover:bg-muted transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                   >
                     <User className="h-4 w-4" />
                     Profil Saya
@@ -262,6 +314,21 @@ export default function Navbar() {
                   </Button>
                 </div>
               )}
+
+              {/* Mobile Theme Toggle */}
+              <div className="mt-4 px-4">
+                <button
+                  onClick={toggleTheme}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-200"
+                >
+                  {mounted && resolvedTheme === 'dark' ? (
+                    <Sun className="h-5 w-5" />
+                  ) : (
+                    <Moon className="h-5 w-5" />
+                  )}
+                  {mounted && resolvedTheme === 'dark' ? 'Mode Terang' : 'Mode Gelap'}
+                </button>
+              </div>
             </div>
           </SheetContent>
         </Sheet>

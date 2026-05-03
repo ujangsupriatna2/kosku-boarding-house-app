@@ -208,10 +208,10 @@ export default function OwnerDashboardView() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-6">
-          <TabsTrigger value="kos">Kos Saya</TabsTrigger>
-          <TabsTrigger value="bookings">Booking Masuk</TabsTrigger>
-        </TabsList>
+          <TabsList className="mb-6 bg-muted/50">
+            <TabsTrigger value="kos" className="data-[state=active]:bg-card data-[state=active]:text-foreground">Kos Saya</TabsTrigger>
+            <TabsTrigger value="bookings" className="data-[state=active]:bg-card data-[state=active]:text-foreground">Booking Masuk</TabsTrigger>
+          </TabsList>
 
         {/* Kos Saya */}
         <TabsContent value="kos">

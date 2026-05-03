@@ -214,7 +214,7 @@ export default function AuthView() {
               </div>
             </div>
             <h2 className="text-2xl font-bold tracking-tight">
-              <span className="text-emerald-600">Kos</span>Ku
+              <span className="text-emerald-600 dark:text-emerald-400">Kos</span><span className="text-foreground">Ku</span>
             </h2>
             <p className="text-muted-foreground text-sm mt-1">Platform Kos #1 di Indonesia</p>
           </motion.div>
@@ -250,10 +250,10 @@ export default function AuthView() {
 
                 <Tabs value={activeTab} onValueChange={(v) => { setView(v as any); setLoginErrors({}); setRegErrors({}); }}>
                   <TabsList className="w-full mb-6 rounded-xl h-11 bg-muted/80 p-1">
-                    <TabsTrigger value="login" className="flex-1 rounded-lg text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all">
+                    <TabsTrigger value="login" className="flex-1 rounded-lg text-sm font-medium data-[state=active]:bg-card data-[state=active]:shadow-sm data-[state=active]:text-foreground transition-all">
                       Masuk
                     </TabsTrigger>
-                    <TabsTrigger value="register" className="flex-1 rounded-lg text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all">
+                    <TabsTrigger value="register" className="flex-1 rounded-lg text-sm font-medium data-[state=active]:bg-card data-[state=active]:shadow-sm data-[state=active]:text-foreground transition-all">
                       Daftar
                     </TabsTrigger>
                   </TabsList>
