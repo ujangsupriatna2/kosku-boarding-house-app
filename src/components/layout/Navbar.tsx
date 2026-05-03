@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
 import {
   Home,
   Menu,
@@ -26,11 +27,23 @@ import {
   User,
   LogOut,
   ChevronDown,
+  Search,
+  X,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Navbar() {
   const { user, currentView, setView, setUser } = useAppStore();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const navigate = (view: string) => {
     setView(view as any);
@@ -56,35 +69,56 @@ export default function Navbar() {
       : []),
   ];
 
+  const isActive = (view: string) => currentView === view;
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+    <header
+      className={`sticky top-0 z-50 w-full transition-all duration-500 ease-out ${
+        scrolled
+          ? 'glass border-b border-white/20 dark:border-white/5 shadow-lg shadow-black/[0.03]'
+          : 'bg-transparent'
+      }`}
+    >
+      <div className="container mx-auto flex h-16 items-center justify-between px-4 lg:px-8">
         {/* Logo */}
         <button
           onClick={() => navigate('home')}
-          className="flex items-center gap-2 font-bold text-xl text-emerald-600 hover:text-emerald-700 transition-colors"
+          className="flex items-center gap-2.5 group"
         >
-          <Home className="h-6 w-6" />
-          <span>KosKu</span>
+          <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-500/25 group-hover:shadow-emerald-500/40 transition-shadow duration-300">
+            <Home className="h-5 w-5 text-white" strokeWidth={2.5} />
+          </div>
+          <span className="text-xl font-bold tracking-tight">
+            <span className="text-emerald-600 dark:text-emerald-400">Kos</span>
+            <span className="text-foreground">Ku</span>
+          </span>
         </button>
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => (
-            <Button
+            <button
               key={link.view}
-              variant={currentView === link.view ? 'default' : 'ghost'}
-              size="sm"
               onClick={() => navigate(link.view)}
-              className={
-                currentView === link.view
-                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                  : 'text-muted-foreground hover:text-foreground'
-              }
+              className="relative px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200"
             >
-              <link.icon className="h-4 w-4 mr-1.5" />
-              {link.label}
-            </Button>
+              <span
+                className={
+                  isActive(link.view)
+                    ? 'text-emerald-600 dark:text-emerald-400'
+                    : 'text-muted-foreground hover:text-foreground'
+                }
+              >
+                {link.label}
+              </span>
+              {isActive(link.view) && (
+                <motion.div
+                  layoutId="nav-active"
+                  className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-500"
+                  transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                />
+              )}
+            </button>
           ))}
         </nav>
 
@@ -93,36 +127,43 @@ export default function Navbar() {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xs">
+                <button className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border hover:bg-accent/50 transition-colors duration-200">
+                  <Avatar className="h-7 w-7">
+                    <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-teal-500 text-white text-xs font-semibold">
                       {user.name?.charAt(0).toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="max-w-[100px] truncate">{user.name}</span>
-                  <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                </Button>
+                  <span className="text-sm font-medium max-w-[100px] truncate">{user.name}</span>
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => navigate('profile')}>
-                  <User className="h-4 w-4 mr-2" />
-                  Profil Saya
+              <DropdownMenuContent align="end" className="w-52 rounded-xl p-2">
+                <DropdownMenuItem onClick={() => navigate('profile')} className="rounded-lg px-3 py-2.5 cursor-pointer">
+                  <User className="h-4 w-4 mr-2.5 text-muted-foreground" />
+                  <div className="flex flex-col">
+                    <span className="text-sm">Profil Saya</span>
+                    <span className="text-xs text-muted-foreground">{user.email}</span>
+                  </div>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-                  <LogOut className="h-4 w-4 mr-2" />
+                <DropdownMenuSeparator className="my-1" />
+                <DropdownMenuItem onClick={handleLogout} className="rounded-lg px-3 py-2.5 text-red-600 focus:text-red-600 cursor-pointer">
+                  <LogOut className="h-4 w-4 mr-2.5" />
                   Keluar
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <div className="flex items-center gap-2">
-              <Button variant="ghost" onClick={() => navigate('login')}>
+              <Button
+                variant="ghost"
+                onClick={() => navigate('login')}
+                className="rounded-full px-5 text-sm font-medium"
+              >
                 Masuk
               </Button>
               <Button
                 onClick={() => navigate('register')}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="rounded-full px-5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-300 text-sm font-medium"
               >
                 Daftar
               </Button>
@@ -133,65 +174,91 @@ export default function Navbar() {
         {/* Mobile Menu */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild className="md:hidden">
-            <Button variant="ghost" size="icon">
-              <Menu className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="rounded-full">
+              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-72">
-            <SheetTitle className="flex items-center gap-2 text-emerald-600 mb-6">
-              <Home className="h-5 w-5" />
-              KosKu
-            </SheetTitle>
-            <nav className="flex flex-col gap-2">
+          <SheetContent side="right" className="w-80 p-0">
+            {/* Header */}
+            <div className="px-6 pt-8 pb-4">
+              <SheetTitle className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                  <Home className="h-5 w-5 text-white" strokeWidth={2.5} />
+                </div>
+                <span className="text-xl font-bold tracking-tight">
+                  <span className="text-emerald-600">Kos</span>
+                  <span>Ku</span>
+                </span>
+              </SheetTitle>
+            </div>
+
+            <Separator className="mx-6" />
+
+            {/* Nav Links */}
+            <nav className="px-4 py-4 space-y-1">
               {navLinks.map((link) => (
-                <Button
+                <button
                   key={link.view}
-                  variant={currentView === link.view ? 'default' : 'ghost'}
-                  className={`justify-start gap-2 ${
-                    currentView === link.view
-                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                      : ''
-                  }`}
                   onClick={() => navigate(link.view)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-200 ${
+                    isActive(link.view)
+                      ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}
                 >
-                  <link.icon className="h-4 w-4" />
+                  <link.icon className="h-5 w-5" />
                   {link.label}
-                </Button>
+                </button>
               ))}
             </nav>
-            <div className="mt-6 border-t pt-4">
+
+            <Separator className="mx-6" />
+
+            {/* Auth Section */}
+            <div className="px-4 py-4">
               {user ? (
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-3 mb-2 px-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-emerald-100 text-emerald-700">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50">
+                    <Avatar className="h-10 w-10">
+                      <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-teal-500 text-white font-semibold">
                         {user.name?.charAt(0).toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <p className="text-sm font-medium">{user.name}</p>
-                      <p className="text-xs text-muted-foreground">{user.email}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold truncate">{user.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                     </div>
                   </div>
-                  <Button variant="ghost" className="justify-start gap-2" onClick={() => navigate('profile')}>
+                  <button
+                    onClick={() => navigate('profile')}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-muted-foreground hover:bg-muted transition-colors"
+                  >
                     <User className="h-4 w-4" />
                     Profil Saya
-                  </Button>
-                  <Button variant="ghost" className="justify-start gap-2 text-red-600" onClick={handleLogout}>
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                  >
                     <LogOut className="h-4 w-4" />
                     Keluar
-                  </Button>
+                  </button>
                 </div>
               ) : (
-                <div className="flex flex-col gap-2">
-                  <Button variant="outline" onClick={() => navigate('login')}>
+                <div className="space-y-2 px-4">
+                  <p className="text-xs text-muted-foreground mb-3 font-medium uppercase tracking-wider">Akun</p>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate('login')}
+                    className="w-full rounded-xl h-11 font-medium"
+                  >
                     Masuk
                   </Button>
                   <Button
                     onClick={() => navigate('register')}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                    className="w-full rounded-xl h-11 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md shadow-emerald-500/25 font-medium"
                   >
-                    Daftar
+                    Daftar Gratis
                   </Button>
                 </div>
               )}
